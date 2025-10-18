@@ -126,7 +126,7 @@ function ClosedCaptionPWA() {
       analyserRef.current = analyser;
       source.connect(analyser);
 
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const dataArray: Uint8Array = new Uint8Array(analyser.frequencyBinCount);
       dataArrayRef.current = dataArray;
 
       const tick = () => {
@@ -151,10 +151,15 @@ function ClosedCaptionPWA() {
           return;
         }
 
-        analyser.getByteTimeDomainData(data);
+        // Ensure 'data' is a Uint8Array with ArrayBuffer backing for this analyzer API.
+        // Create a new Uint8Array view copied from 'data' to guarantee an ArrayBuffer backing
+        // so that TypeScript's DOM types are satisfied and the analyser can write into it.
+        const view = new Uint8Array(data);
+        analyser.getByteTimeDomainData(view);
+        
         let sumSquares = 0;
-        for (let i = 0; i < data.length; i++) {
-          const v = (data[i] - 128) / 128;
+        for (let i = 0; i < view.length; i++) {
+          const v = (view[i] - 128) / 128;
           sumSquares += v * v;
         }
         const rms = Math.sqrt(sumSquares / data.length);
