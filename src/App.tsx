@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import Layout from "./components/Layout";
 
 function ClosedCaptionPWA() {
   const [listening, setListening] = useState(false);
@@ -226,8 +227,9 @@ function ClosedCaptionPWA() {
   const levelPercent = Math.round(level * 100);
 
   return (
-    <div className="min-h-dvh px-5 py-6 font-sans">
-      <div className="mx-auto max-w-3xl">
+    <Layout>
+      <div className="min-h-dvh px-5 py-6 font-sans">
+        <div className="mx-auto max-w-3xl">
         <h1 className="text-2xl font-semibold mb-4">Live Closed Captioning</h1>
         {!supported && (
           <div className="text-red-400 mb-3">
@@ -281,8 +283,9 @@ function ClosedCaptionPWA() {
         <div className="mt-3 text-gray-400 text-sm">
           Start, grant mic permission, and speak into the microphone.
         </div>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
 
