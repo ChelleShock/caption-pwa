@@ -1,7 +1,0 @@
-.vercel
-node_modules/
-dist/
-.DS_Store
-*.tsbuildinfo
-.env*
-*.log
