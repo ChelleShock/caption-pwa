@@ -1,7 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import Layout from "./components/Layout";
+import { useAuth } from "./context/AuthContext";
+import { useTranscripts } from "./hooks/useTranscripts";
+import { pushUnsynced } from "./lib/sync";
+import SyncIndicator from "./components/SyncIndicator";
 
 function ClosedCaptionPWA() {
+  const { user } = useAuth();
+  const { add } = useTranscripts();
   const [listening, setListening] = useState(false);
   const [captions, setCaptions] = useState("");
   const [interim, setInterim] = useState("");
@@ -38,14 +44,21 @@ function ClosedCaptionPWA() {
       if (document.visibilityState === 'visible' && audioContextRef.current.state === 'suspended') {
         audioContextRef.current.resume().catch(() => {});
       }
+      // Trigger sync on visibility
+      if (user?.id) pushUnsynced(user.id).catch(() => {});
+    };
+    const onOnline = () => {
+      if (user?.id) pushUnsynced(user.id).catch(() => {});
     };
     document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('online', onOnline);
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('online', onOnline);
       teardownAudio();
       stopRecognition();
     };
-  }, []);
+  }, [user?.id]);
 
   const attachHandlers = (recognition: any) => {
     recognition.onresult = (event: any) => {
@@ -61,6 +74,8 @@ function ClosedCaptionPWA() {
       }
       if (finalAppend) {
         setCaptions(prev => (prev ? prev + " " : "") + finalAppend.trim());
+        // Save transcript locally with user id
+        add(finalAppend.trim(), user?.id);
       }
       setInterim(interimTranscript);
     };
@@ -242,6 +257,7 @@ function ClosedCaptionPWA() {
           </div>
         )}
         <div className="flex items-center gap-3 mb-5">
+          <SyncIndicator />
           <button
             onClick={handleListen}
             disabled={!supported}
